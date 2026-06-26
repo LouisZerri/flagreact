@@ -1,0 +1,18 @@
+services:
+    web:
+        build: .
+        ports:
+            # Exposé en local uniquement : Apache (frontal) fait le reverse-proxy.
+            - "127.0.0.1:8091:80"
+        depends_on:
+            - api
+        restart: unless-stopped
+
+    api:
+        build:
+            context: .
+            dockerfile: docker/api.Dockerfile
+        volumes:
+            # Persistance des articles sur l'hôte.
+            - ./data:/data
+        restart: unless-stopped
