@@ -1,34 +1,42 @@
-import Axios from "axios";
 import { toast } from "react-toastify";
 
-function getPosts() {
-    return Axios.get("http://localhost:3003/articles").then((res) => res.data);
+// URL relative : proxifiée vers json-server (/api -> :3003) en dev comme en prod.
+const API_URL = "/api/articles";
+
+async function getPosts() {
+    const res = await fetch(API_URL);
+    if (!res.ok) throw new Error(`Erreur de chargement : ${res.status}`);
+    return res.json();
 }
 
-function addPost(author, content) {
+async function addPost(author, content) {
     if (content.length < 140) {
         toast.error("Le message doit faire au minimum 140 caractères");
-    } else {
-        return Axios.post("http://localhost:3003/articles", {
-            author,
-            content,
-            date: Date.now(),
-        }).then(() => {
-            toast.success("Article ajouté avec succès !");
-        });
+        return;
     }
+    const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ author, content, date: Date.now() }),
+    });
+    if (!res.ok) throw new Error(`Erreur d'ajout : ${res.status}`);
+    toast.success("Article ajouté avec succès !");
 }
 
-function editPost(post, id) {
-    return Axios.put("http://localhost:3003/articles/" + id, post).then(() => {
-        toast.success("Article modifié avec succès !");
+async function editPost(post, id) {
+    const res = await fetch(`${API_URL}/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(post),
     });
+    if (!res.ok) throw new Error(`Erreur de modification : ${res.status}`);
+    toast.success("Article modifié avec succès !");
 }
 
-function deletePost(id) {
-    return Axios.delete("http://localhost:3003/articles/" + id).then(() => {
-        toast.success("Article supprimé avec succès !");
-    });
+async function deletePost(id) {
+    const res = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+    if (!res.ok) throw new Error(`Erreur de suppression : ${res.status}`);
+    toast.success("Article supprimé avec succès !");
 }
 
 export default {

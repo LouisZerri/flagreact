@@ -1,13 +1,12 @@
-import React from "react";
 import postsApi from "../services/postsApi";
 
-const DeletePost = ({ id }) => {
+const DeletePost = ({ id, onChange }) => {
     const handleDelete = async () => {
         try {
             await postsApi.deletePost(id);
-            window.location = "/news";
+            onChange?.();
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
     };
 

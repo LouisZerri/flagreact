@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 import postsApi from "../services/postsApi";
 import Logo from "./Logo";
 import Navigation from "./Navigation";
@@ -8,13 +9,17 @@ const News = () => {
     const [posts, setPosts] = useState([]);
     const [author, setAuthor] = useState("");
     const [content, setContent] = useState("");
+    const [loading, setLoading] = useState(true);
 
     const fetchPosts = async () => {
         try {
             const data = await postsApi.getPosts();
             setPosts(data);
         } catch (error) {
-            console.log(error);
+            console.error(error);
+            toast.error("Impossible de charger les articles");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -24,16 +29,18 @@ const News = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
         try {
             await postsApi.addPost(author, content);
             setAuthor("");
             setContent("");
             fetchPosts();
         } catch (error) {
-            console.log(error.response);
+            console.error(error);
+            toast.error("Impossible d'ajouter l'article");
         }
     };
+
+    const sortedPosts = [...posts].sort((a, b) => b.date - a.date);
 
     return (
         <div className="news-container">
@@ -41,28 +48,38 @@ const News = () => {
             <Logo />
             <h1>News</h1>
 
-            <form onSubmit={(e) => handleSubmit(e)}>
+            <form onSubmit={handleSubmit}>
                 <input
                     type="text"
                     placeholder="Nom"
                     onChange={(e) => setAuthor(e.target.value)}
                     value={author}
+                    required
                 />
                 <textarea
                     placeholder="Message"
                     onChange={(e) => setContent(e.target.value)}
                     value={content}
+                    required
                 ></textarea>
                 <input type="submit" value="Envoyer" />
             </form>
 
-            <ul>
-                {posts
-                    .sort((a, b) => b.date - a.date)
-                    .map((post) => (
-                        <Posts key={post.id} post={post} />
+            {loading ? (
+                <p className="news-status">Chargement des articles…</p>
+            ) : sortedPosts.length === 0 ? (
+                <p className="news-status">Aucun article pour le moment.</p>
+            ) : (
+                <ul>
+                    {sortedPosts.map((post) => (
+                        <Posts
+                            key={post.id}
+                            post={post}
+                            onChange={fetchPosts}
+                        />
                     ))}
-            </ul>
+                </ul>
+            )}
         </div>
     );
 };

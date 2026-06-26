@@ -1,16 +1,17 @@
-import React from "react";
 import { NavLink } from "react-router-dom";
+
+const navClass = ({ isActive }) => (isActive ? "nav-active" : undefined);
 
 const Navigation = () => {
     return (
         <div className="navigation">
-            <NavLink exact to="/" activeClassName="nav-active">
+            <NavLink to="/" className={navClass} end>
                 Accueil
             </NavLink>
-            <NavLink exact to="/news" activeClassName="nav-active">
+            <NavLink to="/news" className={navClass} end>
                 News
             </NavLink>
-            <NavLink exact to="/a-propos" activeClassName="nav-active">
+            <NavLink to="/a-propos" className={navClass} end>
                 A propos
             </NavLink>
         </div>

@@ -1,36 +1,33 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import postsApi from "../services/postsApi";
 import DeletePost from "./DeletePost";
 
-const Posts = (props) => {
-    const { post } = props;
+const dateParser = (date) =>
+    new Date(date).toLocaleDateString("fr-FR", {
+        minute: "numeric",
+        hour: "numeric",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+    });
+
+const Posts = ({ post, onChange }) => {
     const [isEditing, setIsEditing] = useState(false);
-    const [editedContent, setEditedContent] = useState("");
-
-    const dateParser = (date) => {
-        let newDate = new Date(date).toLocaleDateString("fr-FR", {
-            minute: "numeric",
-            hour: "numeric",
-            day: "numeric",
-            month: "long",
-            year: "numeric",
-        });
-
-        return newDate;
-    };
+    const [editedContent, setEditedContent] = useState(post.content);
 
     const handleEdit = async () => {
         const editingPost = {
             author: post.author,
-            content: editedContent ? editedContent : post.content,
+            content: editedContent,
             date: Date.now(),
         };
 
         try {
             await postsApi.editPost(editingPost, post.id);
             setIsEditing(false);
+            onChange?.();
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
     };
 
@@ -46,11 +43,11 @@ const Posts = (props) => {
             {isEditing ? (
                 <textarea
                     autoFocus
-                    defaultValue={editedContent ? editedContent : post.content}
+                    value={editedContent}
                     onChange={(e) => setEditedContent(e.target.value)}
                 ></textarea>
             ) : (
-                <p>{editedContent ? editedContent : post.content}</p>
+                <p>{post.content}</p>
             )}
             <div className="btn-container">
                 {isEditing ? (
@@ -58,7 +55,7 @@ const Posts = (props) => {
                 ) : (
                     <button onClick={() => setIsEditing(true)}>Modifier</button>
                 )}
-                <DeletePost id={post.id} />
+                <DeletePost id={post.id} onChange={onChange} />
             </div>
         </div>
     );
